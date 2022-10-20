@@ -1,0 +1,8 @@
+changelog-seen = 2
+[llvm]
+download-ci-llvm = false
+ninja = true
+[build]
+docs = false
+submodules = false
+sanitizers = true
