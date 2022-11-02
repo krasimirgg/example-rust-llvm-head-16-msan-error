@@ -1,0 +1,1611 @@
+Sending build context to Docker daemon  75.78kB
+Step 1/24 : FROM ubuntu:focal
+ ---> 20fffa419e3a
+Step 2/24 : RUN apt-get update
+ ---> Using cache
+ ---> 10f62205fdfd
+Step 3/24 : ARG DEBIAN_FRONTEND=noninteractive
+ ---> Using cache
+ ---> 1cb305f941a4
+Step 4/24 : ENV TZ=Europe/Berlin
+ ---> Using cache
+ ---> 817ad741dadd
+Step 5/24 : RUN apt-get install -y   cmake   ninja-build   tzdata   build-essential   curl   git   wget   rsync   python3   gdb   lld
+ ---> Using cache
+ ---> c142d7808df7
+Step 6/24 : RUN apt-get update
+ ---> Using cache
+ ---> 0401a4d65ac3
+Step 7/24 : ARG RUSTUP_TOOLCHAIN=stable
+ ---> Using cache
+ ---> 615e31c1d284
+Step 8/24 : RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ ---> Using cache
+ ---> 8f05b19c8316
+Step 9/24 : ENV PATH="/root/.cargo/bin:${PATH}"
+ ---> Using cache
+ ---> 6c0a4452c61c
+Step 10/24 : RUN rustup toolchain install $RUSTUP_TOOLCHAIN
+ ---> Using cache
+ ---> 092bb3605e57
+Step 11/24 : RUN rustup component add rust-src
+ ---> Using cache
+ ---> aee35da42558
+Step 12/24 : WORKDIR /example
+ ---> Using cache
+ ---> 540c9cb05b9b
+Step 13/24 : ARG RUST_REF=master
+ ---> Using cache
+ ---> 4f2d38275ab7
+Step 14/24 : RUN git clone https://github.com/rust-lang/rust || true
+ ---> Using cache
+ ---> ee4f3e48e464
+Step 15/24 : RUN (cd rust && git checkout $RUST_REF)
+ ---> Using cache
+ ---> 8de8c2c1ee15
+Step 16/24 : RUN (cd rust && git submodule update --init --recursive)
+ ---> Using cache
+ ---> 852b135771d8
+Step 17/24 : ARG LLVM_REF=llvm/main
+ ---> Using cache
+ ---> 1f048e2a7ef4
+Step 18/24 : ADD update_llvm_branch.sh /example
+ ---> Using cache
+ ---> 69c6758a7a1e
+Step 19/24 : RUN /example/update_llvm_branch.sh $LLVM_REF
+ ---> Using cache
+ ---> c76e91960a5c
+Step 20/24 : ADD config.toml /example/rust
+ ---> Using cache
+ ---> c97f6e789ac3
+Step 21/24 : ADD build_rustc.sh /example
+ ---> Using cache
+ ---> d49eb4b4e3c2
+Step 22/24 : RUN /example/build_rustc.sh
+ ---> Using cache
+ ---> 1c2ff37a3676
+Step 23/24 : ADD run.sh /example
+ ---> Using cache
+ ---> 4b8ed2e49dc1
+Step 24/24 : ADD run_penguin.sh /example
+ ---> 82c6e0e8d01e
+Successfully built 82c6e0e8d01e
+Successfully tagged rustllvm:latest
++ rustup toolchain link stage1 /example/rust/build/x86_64-unknown-linux-gnu/stage1
++ rm -rf penguin
++ cargo new --lib penguin
+[0m[0m[1m[32m     Created[0m library `penguin` package
++ cd penguin
++ cat
++ rustup default stage1
+[1minfo: (B[mdefault toolchain set to 'stage1'
++ RUSTFLAGS='-Zsanitizer=memory -Csave-temps --emit=llvm-ir -Ccodegen-units=1 -Cllvm-args=-print-before-all -Cllvm-args=-filter-print-funcs=penguin'
++ cargo --color=never -Zbuild-std build --target=x86_64-unknown-linux-gnu
+   Compiling compiler_builtins v0.1.82
+   Compiling core v0.0.0 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/core)
+   Compiling libc v0.2.131
+   Compiling cc v1.0.73
+   Compiling memchr v2.5.0
+   Compiling std v0.0.0 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/std)
+   Compiling unwind v0.0.0 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/unwind)
+   Compiling rustc-std-workspace-core v1.99.0 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/rustc-std-workspace-core)
+   Compiling alloc v0.0.0 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/alloc)
+   Compiling cfg-if v0.1.10
+   Compiling cfg-if v1.0.0
+   Compiling adler v0.2.3
+   Compiling rustc-demangle v0.1.21
+   Compiling rustc-std-workspace-alloc v1.99.0 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/rustc-std-workspace-alloc)
+   Compiling panic_unwind v0.0.0 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/panic_unwind)
+   Compiling panic_abort v0.0.0 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/panic_abort)
+   Compiling gimli v0.25.0
+   Compiling miniz_oxide v0.4.0
+   Compiling std_detect v0.1.5 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/stdarch/crates/std_detect)
+   Compiling hashbrown v0.12.3
+   Compiling object v0.26.2
+   Compiling addr2line v0.16.0
+   Compiling proc_macro v0.0.0 (/example/rust/build/x86_64-unknown-linux-gnu/stage1/lib/rustlib/src/rust/library/proc_macro)
+   Compiling penguin v0.1.0 (/example/penguin)
+*** IR Dump Before AlwaysInlinerPass on [module] ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  %dummy.dbg.spill = alloca {}, align 1
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before CoroConditionalWrapper on [module] ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  %dummy.dbg.spill = alloca {}, align 1
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before MemorySanitizerPass on [module] ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  %dummy.dbg.spill = alloca {}, align 1
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before AnnotationRemarksPass on penguin ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before CanonicalizeAliasesPass on [module] ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before NameAnonGlobalPass on [module] ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Pre-ISel Intrinsic Lowering (pre-isel-intrinsic-lowering) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Expand large div/rem (expand-large-div-rem) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Expand Atomic instructions (atomic-expand) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Lower AMX intrinsics (lower-amx-intrinsics) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Lower AMX type for load/store (lower-amx-type) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Module Verifier (verify) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Lower Garbage Collection Instructions (gc-lowering) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Shadow Stack GC Lowering (shadow-stack-gc-lowering) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Lower constant intrinsics (lower-constant-intrinsics) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Remove unreachable blocks from the CFG (unreachableblockelim) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Expand vector predication intrinsics (expandvp) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Scalarize Masked Memory Intrinsics (scalarize-masked-mem-intrin) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Expand reduction intrinsics (expand-reductions) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Expand indirectbr instructions (indirectbr-expand) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Exception handling preparation (dwarfehprepare) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Safe Stack instrumentation pass (safe-stack) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+*** IR Dump Before Module Verifier (verify) ***
+; Function Attrs: nonlazybind sanitize_memory uwtable
+define i64 @penguin() unnamed_addr #0 !dbg !6 {
+start:
+  call void @llvm.donothing()
+  %dummy.dbg.spill = alloca {}, align 1
+  %0 = ptrtoint ptr %dummy.dbg.spill to i64
+  %1 = xor i64 %0, 87960930222080
+  %2 = inttoptr i64 %1 to ptr
+  call void @llvm.memset.p0.i64(ptr align 1 %2, i8 -1, i64 0, i1 false)
+  call void @llvm.dbg.declare(metadata ptr %dummy.dbg.spill, metadata !13, metadata !DIExpression()), !dbg !17
+  call void @__msan_warning_noreturn() #5, !dbg !18
+  call void asm sideeffect "", "r,~{memory}"(ptr undef), !dbg !18, !srcloc !19
+  br label %bb1, !dbg !18
+
+bb1:                                              ; preds = %start
+  store i64 0, ptr @__msan_retval_tls, align 8, !dbg !20
+  ret i64 0, !dbg !20
+}
+# *** IR Dump Before Finalize ISel and expand pseudo-instructions (finalize-isel) ***:
+# Machine code for function penguin: IsSSA, TracksLiveness
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  %9:gr64 = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  %7:gr64 = MOV64ri 87960930222080
+  %8:gr64 = XOR64rr %9:gr64(tied-def 0), %7:gr64, implicit-def $eflags
+  %2:gr32 = MOV32ri 255
+  %3:gr32 = MOV32r0 implicit-def $eflags
+  %4:gr64 = SUBREG_TO_REG 0, %3:gr32, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  $rdi = COPY %8:gr64
+  $esi = COPY %2:gr32
+  $rdx = COPY %4:gr64
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit $rdi, implicit $esi, implicit $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  %0:gr64 = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], %0:gr64, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  %12:gr64 = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed %12:gr64, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  %10:gr32 = MOV32r0 implicit-def $eflags, debug-location !20; src/lib.rs:7:2
+  %11:gr64 = SUBREG_TO_REG 0, %10:gr32, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  $rax = COPY %11:gr64, debug-location !20; src/lib.rs:7:2
+  RET64 implicit $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Local Stack Slot Allocation (localstackalloc) ***:
+# Machine code for function penguin: IsSSA, TracksLiveness
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  %9:gr64 = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  %7:gr64 = MOV64ri 87960930222080
+  %8:gr64 = XOR64rr %9:gr64(tied-def 0), %7:gr64, implicit-def $eflags
+  %2:gr32 = MOV32ri 255
+  %3:gr32 = MOV32r0 implicit-def $eflags
+  %4:gr64 = SUBREG_TO_REG 0, %3:gr32, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  $rdi = COPY %8:gr64
+  $esi = COPY %2:gr32
+  $rdx = COPY %4:gr64
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit $rdi, implicit $esi, implicit $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  %0:gr64 = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], %0:gr64, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  %12:gr64 = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed %12:gr64, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  %10:gr32 = MOV32r0 implicit-def $eflags, debug-location !20; src/lib.rs:7:2
+  %11:gr64 = SUBREG_TO_REG 0, %10:gr32, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  $rax = COPY %11:gr64, debug-location !20; src/lib.rs:7:2
+  RET64 implicit $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before X86 speculative load hardening (x86-slh) ***:
+# Machine code for function penguin: IsSSA, TracksLiveness
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  %9:gr64 = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  %7:gr64 = MOV64ri 87960930222080
+  %8:gr64 = XOR64rr %9:gr64(tied-def 0), %7:gr64, implicit-def $eflags
+  %2:gr32 = MOV32ri 255
+  %3:gr32 = MOV32r0 implicit-def $eflags
+  %4:gr64 = SUBREG_TO_REG 0, %3:gr32, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  $rdi = COPY %8:gr64
+  $esi = COPY %2:gr32
+  $rdx = COPY %4:gr64
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit $rdi, implicit $esi, implicit $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  %0:gr64 = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], %0:gr64, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  %12:gr64 = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed %12:gr64, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  %10:gr32 = MOV32r0 implicit-def $eflags, debug-location !20; src/lib.rs:7:2
+  %11:gr64 = SUBREG_TO_REG 0, %10:gr32, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  $rax = COPY %11:gr64, debug-location !20; src/lib.rs:7:2
+  RET64 implicit $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before X86 EFLAGS copy lowering (x86-flags-copy-lowering) ***:
+# Machine code for function penguin: IsSSA, TracksLiveness
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  %9:gr64 = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  %7:gr64 = MOV64ri 87960930222080
+  %8:gr64 = XOR64rr %9:gr64(tied-def 0), %7:gr64, implicit-def $eflags
+  %2:gr32 = MOV32ri 255
+  %3:gr32 = MOV32r0 implicit-def $eflags
+  %4:gr64 = SUBREG_TO_REG 0, %3:gr32, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  $rdi = COPY %8:gr64
+  $esi = COPY %2:gr32
+  $rdx = COPY %4:gr64
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit $rdi, implicit $esi, implicit $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  %0:gr64 = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], %0:gr64, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  %12:gr64 = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed %12:gr64, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  %10:gr32 = MOV32r0 implicit-def $eflags, debug-location !20; src/lib.rs:7:2
+  %11:gr64 = SUBREG_TO_REG 0, %10:gr32, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  $rax = COPY %11:gr64, debug-location !20; src/lib.rs:7:2
+  RET64 implicit $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Fast Tile Register Preconfigure (fastpretileconfig) ***:
+# Machine code for function penguin: IsSSA, TracksLiveness
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  %9:gr64 = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  %7:gr64 = MOV64ri 87960930222080
+  %8:gr64 = XOR64rr %9:gr64(tied-def 0), %7:gr64, implicit-def $eflags
+  %2:gr32 = MOV32ri 255
+  %3:gr32 = MOV32r0 implicit-def $eflags
+  %4:gr64 = SUBREG_TO_REG 0, %3:gr32, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  $rdi = COPY %8:gr64
+  $esi = COPY %2:gr32
+  $rdx = COPY %4:gr64
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit $rdi, implicit $esi, implicit $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  %0:gr64 = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], %0:gr64, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  %12:gr64 = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed %12:gr64, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  %10:gr32 = MOV32r0 implicit-def $eflags, debug-location !20; src/lib.rs:7:2
+  %11:gr64 = SUBREG_TO_REG 0, %10:gr32, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  $rax = COPY %11:gr64, debug-location !20; src/lib.rs:7:2
+  RET64 implicit $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Eliminate PHI nodes for register allocation (phi-node-elimination) ***:
+# Machine code for function penguin: IsSSA, TracksLiveness
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  %9:gr64 = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  %7:gr64 = MOV64ri 87960930222080
+  %8:gr64 = XOR64rr %9:gr64(tied-def 0), %7:gr64, implicit-def $eflags
+  %2:gr32 = MOV32ri 255
+  %3:gr32 = MOV32r0 implicit-def $eflags
+  %4:gr64 = SUBREG_TO_REG 0, %3:gr32, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  $rdi = COPY %8:gr64
+  $esi = COPY %2:gr32
+  $rdx = COPY %4:gr64
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit $rdi, implicit $esi, implicit $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  %0:gr64 = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], %0:gr64, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  %12:gr64 = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed %12:gr64, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  %10:gr32 = MOV32r0 implicit-def $eflags, debug-location !20; src/lib.rs:7:2
+  %11:gr64 = SUBREG_TO_REG 0, %10:gr32, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  $rax = COPY %11:gr64, debug-location !20; src/lib.rs:7:2
+  RET64 implicit $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Two-Address instruction pass (twoaddressinstruction) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  %9:gr64 = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  %7:gr64 = MOV64ri 87960930222080
+  %8:gr64 = XOR64rr %9:gr64(tied-def 0), %7:gr64, implicit-def $eflags
+  %2:gr32 = MOV32ri 255
+  %3:gr32 = MOV32r0 implicit-def $eflags
+  %4:gr64 = SUBREG_TO_REG 0, %3:gr32, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  $rdi = COPY %8:gr64
+  $esi = COPY %2:gr32
+  $rdx = COPY %4:gr64
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit $rdi, implicit $esi, implicit $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  %0:gr64 = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], %0:gr64, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  %12:gr64 = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed %12:gr64, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  %10:gr32 = MOV32r0 implicit-def $eflags, debug-location !20; src/lib.rs:7:2
+  %11:gr64 = SUBREG_TO_REG 0, %10:gr32, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  $rax = COPY %11:gr64, debug-location !20; src/lib.rs:7:2
+  RET64 implicit $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Fast Register Allocator (regallocfast) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  %9:gr64 = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  %7:gr64 = MOV64ri 87960930222080
+  %8:gr64 = COPY %9:gr64
+  %8:gr64 = XOR64rr %8:gr64(tied-def 0), %7:gr64, implicit-def $eflags
+  %2:gr32 = MOV32ri 255
+  %3:gr32 = MOV32r0 implicit-def $eflags
+  %4:gr64 = SUBREG_TO_REG 0, %3:gr32, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  $rdi = COPY %8:gr64
+  $esi = COPY %2:gr32
+  $rdx = COPY %4:gr64
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit $rdi, implicit $esi, implicit $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  %0:gr64 = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], %0:gr64, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  %12:gr64 = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed %12:gr64, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  %10:gr32 = MOV32r0 implicit-def $eflags, debug-location !20; src/lib.rs:7:2
+  %11:gr64 = SUBREG_TO_REG 0, %10:gr32, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  $rax = COPY %11:gr64, debug-location !20; src/lib.rs:7:2
+  RET64 implicit $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Fast Tile Register Configure (fasttileconfig) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  renamable $rdi = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = MOV32r0 implicit-def dead $eflags
+  renamable $rdx = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = MOV32r0 implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before X86 Lower Tile Copy (lowertilecopy) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  renamable $rdi = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = MOV32r0 implicit-def dead $eflags
+  renamable $rdx = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = MOV32r0 implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before X86 FP Stackifier (x86-codegen) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  renamable $rdi = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = MOV32r0 implicit-def dead $eflags
+  renamable $rdx = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = MOV32r0 implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Remove Redundant DEBUG_VALUE analysis (removeredundantdebugvalues) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  renamable $rdi = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = MOV32r0 implicit-def dead $eflags
+  renamable $rdx = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = MOV32r0 implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Fixup Statepoint Caller Saved (fixup-statepoint-caller-saved) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  renamable $rdi = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = MOV32r0 implicit-def dead $eflags
+  renamable $rdx = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = MOV32r0 implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Prologue/Epilogue Insertion & Frame Finalization (prologepilog) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP+8]
+
+bb.0.start:
+  successors: %bb.1
+
+  renamable $rdi = LEA64r %stack.0.dummy.dbg.spill, 1, $noreg, 0, $noreg
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = MOV32r0 implicit-def dead $eflags
+  renamable $rdx = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp
+  ADJCALLSTACKDOWN64 0, 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  ADJCALLSTACKUP64 0, 0, implicit-def $rsp, implicit-def dead $eflags, implicit-def $ssp, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = MOV32r0 implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Post-RA pseudo instruction expansion pass (postrapseudos) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = MOV32r0 implicit-def dead $eflags
+  renamable $rdx = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = MOV32r0 implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = SUBREG_TO_REG 0, killed renamable $eax, %subreg.sub_32bit, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before X86 pseudo instruction expansion pass (x86-pseudo) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Insert KCFI indirect call checks (x86-kcfi) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Analyze Machine Code For Garbage Collection (gc-analysis) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Insert fentry calls (fentry-insert) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Insert XRay ops (xray-instrumentation) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Implement the 'patchable-function' attribute (patchable-function) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Compressing EVEX instrs to VEX encoding when possible (x86-evex-to-vex-compress) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Contiguously Lay Out Funclets (funclet-layout) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before StackMap Liveness Analysis (stackmap-liveness) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Live DEBUG_VALUE analysis (livedebugvalues) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before X86 Speculative Execution Side Effect Suppression (x86-seses) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before X86 Return Thunks (x86-return-thunks) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Check CFA info and insert CFI instructions if needed (cfi-instr-inserter) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before X86 Load Value Injection (LVI) Ret-Hardening (x86-lvi-ret) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Pseudo Probe Inserter (pseudo-probe-inserter) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+# *** IR Dump Before Unpack machine instruction bundles (unpack-mi-bundles) ***:
+# Machine code for function penguin: NoPHIs, TracksLiveness, NoVRegs, TiedOpsRewritten
+Frame Objects:
+  fi#0: size=1, align=8, at location [SP-8]
+
+bb.0.start:
+  successors: %bb.1
+
+  frame-setup PUSH64r undef $rax, implicit-def $rsp, implicit $rsp
+  frame-setup CFI_INSTRUCTION def_cfa_offset 16
+  $rdi = MOV64rr $rsp
+  renamable $rax = MOV64ri 87960930222080
+  renamable $rdi = XOR64rr renamable $rdi(tied-def 0), killed renamable $rax, implicit-def dead $eflags
+  renamable $esi = MOV32ri 255
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags
+  $edx = MOV32rr killed $eax, implicit-def $rdx
+  CALL64pcrel32 target-flags(x86-plt) <mcsymbol memset>, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, implicit killed $rdi, implicit killed $esi, implicit killed $rdx
+  CALL64pcrel32 target-flags(x86-plt) @__msan_warning_noreturn, <regmask $bh $bl $bp $bph $bpl $bx $ebp $ebx $hbp $hbx $rbp $rbx $r12 $r13 $r14 $r15 $r12b $r13b $r14b $r15b $r12bh $r13bh $r14bh $r15bh $r12d $r13d $r14d $r15d $r12w $r13w $r14w $r15w $r12wh and 3 more...>, implicit $rsp, implicit $ssp, debug-location !18; src/lib.rs:5:5
+  renamable $rax = IMPLICIT_DEF debug-location !18; src/lib.rs:5:5
+  INLINEASM &"" [sideeffect] [mayload] [maystore] [attdialect], $0:[reguse:GR64], killed renamable $rax, !19, debug-location !18; src/lib.rs:5:5
+
+bb.1.bb1:
+; predecessors: %bb.0
+
+  renamable $rax = MOV64rm $rip, 1, $noreg, target-flags(x86-gottpoff) @__msan_retval_tls, $noreg, debug-location !20 :: (load (s64) from got); src/lib.rs:7:2
+  MOV64mi32 killed renamable $rax, 1, $noreg, 0, $fs, 0, debug-location !20 :: (store (s64) into @__msan_retval_tls); src/lib.rs:7:2
+  renamable $eax = XOR32rr undef $eax(tied-def 0), undef $eax, implicit-def dead $eflags, debug-location !20; src/lib.rs:7:2
+  renamable $rax = KILL killed renamable $eax, debug-location !20; src/lib.rs:7:2
+  $rcx = frame-destroy POP64r implicit-def $rsp, implicit $rsp, debug-location !20; src/lib.rs:7:2
+  frame-destroy CFI_INSTRUCTION def_cfa_offset 8, debug-location !20; src/lib.rs:7:2
+  RET64 implicit killed $rax, debug-location !20; src/lib.rs:7:2
+
+# End machine code for function penguin.
+
+    Finished dev [unoptimized + debuginfo] target(s) in 39.09s

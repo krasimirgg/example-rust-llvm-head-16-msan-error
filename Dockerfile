@@ -40,6 +40,7 @@ ADD build_rustc.sh /example
 RUN /example/build_rustc.sh
 
 ADD run.sh /example
+ADD run_penguin.sh /example
 
 # RUN (cd rust && echo "[llvm]\ndownload-ci-llvm = true">config.toml)
 # RUN (cd rust && python3 x.py build library/std compiler/rustc src/tools/cargo)
